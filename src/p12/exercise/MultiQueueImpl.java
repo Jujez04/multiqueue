@@ -103,15 +103,15 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     public void closeQueueAndReallocate(Q queue) {
         if(this.map.containsKey(queue)){
             List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
+            this.map.remove(queue);
             for ( Q i : this.availableQueues()) {
                 if(!queueToBeClosed.isEmpty()){
-                    this.enqueue(queueToBeClosed.removeLast(), queue);
+                    this.enqueue(queueToBeClosed.removeFirst(), i);
                 }
             }
             if (!queueToBeClosed.isEmpty()) {
                 throw new IllegalStateException();
             }
-            this.map.remove(queue);
         } else {
             throw new IllegalArgumentException();
         }
