@@ -2,6 +2,7 @@ package p12.exercise;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,11 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public Set<T> allEnqueuedElements() {
-        
+        Set<T> enqueued = new HashSet<>();
+        for ( Q i : this.availableQueues()) {
+            enqueued.addAll(this.map.get(i));
+        }
+        return enqueued;
     }
 
     @Override
