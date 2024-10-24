@@ -1,6 +1,5 @@
 package p12.exercise;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -20,6 +19,14 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         this(new HashMap<Q, List<T>>());
     }
 
+    private List<T> getQueue(Q queue){
+        if ( !this.map.containsKey(queue) ) {
+            return this.map.get(queue);
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
     @Override
     public Set<Q> availableQueues() {
        return this.map.keySet();
@@ -37,7 +44,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     @Override
     public boolean isQueueEmpty(Q queue) {
         if ( !this.map.containsKey(queue) ) {
-            return this.map.get(queue).isEmpty();
+            return this.getQueue(queue).isEmpty();
         } else {
             throw new IllegalArgumentException();
         }
@@ -46,7 +53,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     @Override
     public void enqueue(T elem, Q queue) {
         if ( !this.map.containsKey(queue) ) {
-            this.map.get(queue).add(elem);
+            this.getQueue(queue).add(elem);
         } else {
             throw new IllegalArgumentException();
         }
@@ -55,7 +62,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     @Override
     public T dequeue(Q queue) {
         if ( !this.map.containsKey(queue) ) {
-            return this.map.get(queue).removeFirst();
+            return this.getQueue(queue).removeFirst();
         } else {
             throw new IllegalArgumentException();
         }
@@ -83,8 +90,8 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     @Override
     public List<T> dequeueAllFromQueue(Q queue) {
         if ( !this.map.containsKey(queue) ) {
-            List<T> allDequeued = this.map.get(queue);
-            this.map.get(queue).clear();
+            List<T> allDequeued = this.getQueue(queue);
+            this.getQueue(queue).clear();
             return allDequeued;
         } else {
             throw new IllegalArgumentException();
@@ -93,8 +100,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public void closeQueueAndReallocate(Q queue) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'closeQueueAndReallocate'");
+        
     }
 
 }
