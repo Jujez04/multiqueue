@@ -1,11 +1,6 @@
 package p12.exercise;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
@@ -20,7 +15,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     private List<T> getQueue(Q queue){
-        if ( !this.map.containsKey(queue) ) {
+        if ( this.map.containsKey(queue) ) {
             return this.map.get(queue);
         } else {
             throw new IllegalArgumentException();
@@ -43,7 +38,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public boolean isQueueEmpty(Q queue) {
-        if ( !this.map.containsKey(queue) ) {
+        if ( this.map.containsKey(queue) ) {
             return this.getQueue(queue).isEmpty();
         } else {
             throw new IllegalArgumentException();
@@ -52,7 +47,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public void enqueue(T elem, Q queue) {
-        if ( !this.map.containsKey(queue) ) {
+        if ( this.map.containsKey(queue) ) {
             this.getQueue(queue).add(elem);
         } else {
             throw new IllegalArgumentException();
@@ -61,8 +56,12 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public T dequeue(Q queue) {
-        if ( !this.map.containsKey(queue) ) {
-            return this.getQueue(queue).removeFirst();
+        if ( this.map.containsKey(queue) ) {
+            try {
+                return this.getQueue(queue).removeFirst();
+            } catch (NoSuchElementException e) {
+                return null;
+            }
         } else {
             throw new IllegalArgumentException();
         }
@@ -82,16 +81,18 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     public Set<T> allEnqueuedElements() {
         Set<T> enqueued = new HashSet<>();
         for ( Q i : this.availableQueues()) {
-            enqueued.addAll(this.map.get(i));
+            enqueued.addAll(this.getQueue(i));
         }
         return enqueued;
     }
 
     @Override
     public List<T> dequeueAllFromQueue(Q queue) {
-        if ( !this.map.containsKey(queue) ) {
-            List<T> allDequeued = this.getQueue(queue);
-            this.getQueue(queue).clear();
+        if ( this.map.containsKey(queue) ) {
+            List<T> allDequeued = new ArrayList<>();
+            while( !this.getQueue(queue).isEmpty() ) {
+                allDequeued.add(this.dequeue(queue));
+            }
             return allDequeued;
         } else {
             throw new IllegalArgumentException();
@@ -100,6 +101,20 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public void closeQueueAndReallocate(Q queue) {
+        if(this.map.containsKey(queue)){
+            List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
+            for ( Q i : this.availableQueues()) {
+                if(!queueToBeClosed.isEmpty()){
+                    this.enqueue(queueToBeClosed.removeLast(), queue);
+                }
+            }
+            if (!queueToBeClosed.isEmpty()) {
+                throw new IllegalStateException();
+            }
+            this.map.remove(queue);
+        } else {
+            throw new IllegalArgumentException();
+        }
         
     }
 
