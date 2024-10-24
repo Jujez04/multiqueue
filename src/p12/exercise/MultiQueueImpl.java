@@ -82,8 +82,13 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public List<T> dequeueAllFromQueue(Q queue) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'dequeueAllFromQueue'");
+        if ( !this.map.containsKey(queue) ) {
+            List<T> allDequeued = this.map.get(queue);
+            this.map.get(queue).clear();
+            return allDequeued;
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override
