@@ -28,7 +28,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public void openNewQueue(Q queue) {
+    public void openNewQueue(Q queue) throws IllegalArgumentException{
         if ( !this.map.containsKey(queue) ) {
             this.map.put(queue, new LinkedList<>());
         } else {
@@ -37,7 +37,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public boolean isQueueEmpty(Q queue) {
+    public boolean isQueueEmpty(Q queue) throws IllegalArgumentException {
         if ( this.map.containsKey(queue) ) {
             return this.getQueue(queue).isEmpty();
         } else {
@@ -46,7 +46,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public void enqueue(T elem, Q queue) {
+    public void enqueue(T elem, Q queue) throws IllegalArgumentException{
         if ( this.map.containsKey(queue) ) {
             this.getQueue(queue).add(elem);
         } else {
@@ -55,7 +55,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public T dequeue(Q queue) {
+    public T dequeue(Q queue) throws IllegalArgumentException {
         if ( this.map.containsKey(queue) ) {
             try {
                 return this.getQueue(queue).removeFirst();
@@ -68,7 +68,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public Map<Q, T> dequeueOneFromAllQueues() {
+    public Map<Q, T> dequeueOneFromAllQueues() throws IllegalArgumentException{
         Map<Q, T> dequeued = new HashMap<>();
         for ( Q i : this.availableQueues()) {
             T removed = this.dequeue(i);
@@ -87,7 +87,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public List<T> dequeueAllFromQueue(Q queue) {
+    public List<T> dequeueAllFromQueue(Q queue) throws IllegalArgumentException{
         if ( this.map.containsKey(queue) ) {
             List<T> allDequeued = new ArrayList<>();
             while( !this.getQueue(queue).isEmpty() ) {
@@ -100,7 +100,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     }
 
     @Override
-    public void closeQueueAndReallocate(Q queue) {
+    public void closeQueueAndReallocate(Q queue) throws IllegalArgumentException, IllegalStateException{
         if(this.map.containsKey(queue)){
             List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
             this.map.remove(queue);
