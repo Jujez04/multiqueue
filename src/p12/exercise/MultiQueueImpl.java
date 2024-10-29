@@ -55,11 +55,10 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         if ( !this.map.containsKey(queue) ) {
             throw new IllegalArgumentException();
         }
-        try {
-            return this.getQueue(queue).removeFirst();
-        } catch (NoSuchElementException e) {
+        if (this.getQueue(queue).isEmpty()) {
             return null;
         }
+        return this.getQueue(queue).remove(0);
     }
 
     @Override
@@ -75,7 +74,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     public Set<T> allEnqueuedElements() {
         Set<T> enqueued = new HashSet<>();
         for ( Q i : this.availableQueues()) {
-            enqueued.addAll(this.getQueue(i));
+            enqueued.addAll(new ArrayList<>(this.getQueue(i)));
         }
         return enqueued;
     }
@@ -85,10 +84,8 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         if ( !this.map.containsKey(queue) ) {
             throw new IllegalArgumentException();
         } 
-        List<T> allDequeued = new ArrayList<>();
-        while( !this.getQueue(queue).isEmpty() ) {
-            allDequeued.add(this.dequeue(queue));
-        }
+        List<T> allDequeued = new ArrayList<>(this.getQueue(queue));
+        this.getQueue(queue).clear();    //Modified : now it creates a defensive copy and calls queue.clear 
         return allDequeued;    
     }
 
@@ -99,15 +96,23 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         }
         List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
         this.map.remove(queue);
+        //Iterator pattern
+        Iterator<Q> queueIterator = this.availableQueues().iterator();
+        for (T elem : queueToBeClosed) {
+            if (!queueIterator.hasNext()) {
+                queueIterator = this.availableQueues().iterator(); // Ripartiamo dall'inizio se necessario
+            }
+            this.enqueue(elem, queueIterator.next());
+        }
+        /* 
         for ( Q i : this.availableQueues()) {
             if(!queueToBeClosed.isEmpty()){
-                this.enqueue(queueToBeClosed.removeFirst(), i);
+                this.enqueue(queueToBeClosed.remove(0), i);
             }
         }
+        */
         if (!queueToBeClosed.isEmpty()) {
             throw new IllegalStateException();
         }
-        
     }
-
 }
