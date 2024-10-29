@@ -14,12 +14,11 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         this(new HashMap<Q, List<T>>());
     }
 
-    private List<T> getQueue(Q queue){
-        if ( this.map.containsKey(queue) ) {
-            return this.map.get(queue);
-        } else {
-            throw new IllegalArgumentException();
-        }
+    private List<T> getQueue(Q queue){    
+        if ( !this.map.containsKey(queue) ) {
+            throw new IllegalArgumentException();  // From L21 --> L19 : for better readability
+        } 
+        return this.map.get(queue);
     }
 
     @Override
@@ -29,41 +28,37 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public void openNewQueue(Q queue) throws IllegalArgumentException{
-        if ( !this.map.containsKey(queue) ) {
-            this.map.put(queue, new LinkedList<>());
-        } else {
-            throw new IllegalArgumentException();
+        if ( this.map.containsKey(queue) ) {
+            throw new IllegalArgumentException();  // Modified for readability
         }
+        this.map.put(queue, new LinkedList<>());
     }
 
     @Override
     public boolean isQueueEmpty(Q queue) throws IllegalArgumentException {
-        if ( this.map.containsKey(queue) ) {
-            return this.getQueue(queue).isEmpty();
-        } else {
-            throw new IllegalArgumentException();
+        if ( !this.map.containsKey(queue) ) {
+            throw new IllegalArgumentException();  //Modified
         }
+        return this.getQueue(queue).isEmpty();
     }
 
     @Override
     public void enqueue(T elem, Q queue) throws IllegalArgumentException{
-        if ( this.map.containsKey(queue) ) {
-            this.getQueue(queue).add(elem);
-        } else {
-            throw new IllegalArgumentException();
+        if ( !this.map.containsKey(queue) ) {
+            throw new IllegalArgumentException(); //Modified  
         }
+        this.getQueue(queue).add(elem);   
     }
 
     @Override
     public T dequeue(Q queue) throws IllegalArgumentException {
-        if ( this.map.containsKey(queue) ) {
-            try {
-                return this.getQueue(queue).removeFirst();
-            } catch (NoSuchElementException e) {
-                return null;
-            }
-        } else {
+        if ( !this.map.containsKey(queue) ) {
             throw new IllegalArgumentException();
+        }
+        try {
+            return this.getQueue(queue).removeFirst();
+        } catch (NoSuchElementException e) {
+            return null;
         }
     }
 
@@ -71,8 +66,7 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
     public Map<Q, T> dequeueOneFromAllQueues() throws IllegalArgumentException{
         Map<Q, T> dequeued = new HashMap<>();
         for ( Q i : this.availableQueues()) {
-            T removed = this.dequeue(i);
-            dequeued.put(i, removed);
+            dequeued.put(i, this.dequeue(i));
         }
         return dequeued;
     }
@@ -88,32 +82,30 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
 
     @Override
     public List<T> dequeueAllFromQueue(Q queue) throws IllegalArgumentException{
-        if ( this.map.containsKey(queue) ) {
-            List<T> allDequeued = new ArrayList<>();
-            while( !this.getQueue(queue).isEmpty() ) {
-                allDequeued.add(this.dequeue(queue));
-            }
-            return allDequeued;
-        } else {
+        if ( !this.map.containsKey(queue) ) {
             throw new IllegalArgumentException();
+        } 
+        List<T> allDequeued = new ArrayList<>();
+        while( !this.getQueue(queue).isEmpty() ) {
+            allDequeued.add(this.dequeue(queue));
         }
+        return allDequeued;    
     }
 
     @Override
     public void closeQueueAndReallocate(Q queue) throws IllegalArgumentException, IllegalStateException{
-        if(this.map.containsKey(queue)){
-            List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
-            this.map.remove(queue);
-            for ( Q i : this.availableQueues()) {
-                if(!queueToBeClosed.isEmpty()){
-                    this.enqueue(queueToBeClosed.removeFirst(), i);
-                }
-            }
-            if (!queueToBeClosed.isEmpty()) {
-                throw new IllegalStateException();
-            }
-        } else {
+        if(!this.map.containsKey(queue)){
             throw new IllegalArgumentException();
+        }
+        List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
+        this.map.remove(queue);
+        for ( Q i : this.availableQueues()) {
+            if(!queueToBeClosed.isEmpty()){
+                this.enqueue(queueToBeClosed.removeFirst(), i);
+            }
+        }
+        if (!queueToBeClosed.isEmpty()) {
+            throw new IllegalStateException();
         }
         
     }
