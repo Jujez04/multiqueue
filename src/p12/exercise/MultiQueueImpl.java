@@ -96,21 +96,14 @@ public class MultiQueueImpl<T, Q> implements MultiQueue<T, Q>{
         }
         List<T> queueToBeClosed = this.dequeueAllFromQueue(queue);
         this.map.remove(queue);
-        //Iterator pattern
+        //Use iterator for reallocating elements of the removed queue
         Iterator<Q> queueIterator = this.availableQueues().iterator();
         for (T elem : queueToBeClosed) {
             if (!queueIterator.hasNext()) {
-                queueIterator = this.availableQueues().iterator(); // Ripartiamo dall'inizio se necessario
+                queueIterator = this.availableQueues().iterator(); 
             }
             this.enqueue(elem, queueIterator.next());
         }
-        /* 
-        for ( Q i : this.availableQueues()) {
-            if(!queueToBeClosed.isEmpty()){
-                this.enqueue(queueToBeClosed.remove(0), i);
-            }
-        }
-        */
         if (!queueToBeClosed.isEmpty()) {
             throw new IllegalStateException();
         }
